@@ -14,6 +14,8 @@ class HomeScreen extends StatefulWidget {
 // State class for HomeScreen
 class _HomeScreenState extends State<HomeScreen> {
   String dropdownValue = 'Motivation'; // Default selected category
+  int prevNum =
+      0; // to stop the previous random number to prevent showing the same quote
 
   // List of available quote categories
   final List<String> categories = [
@@ -116,8 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
         quotes[dropdownValue] ?? []; // Get quotes for the selected category
     if (quoteList.isNotEmpty) {
       setState(() {
-        displayedQuote = quoteList[
-            random.nextInt(quoteList.length)]; // Select a random quote
+        int randNum;
+        do {
+          randNum = random.nextInt(quoteList.length);
+        } while (quoteList.length > 1 &&
+            randNum == prevNum); // Prevents repeat quotes
+
+        prevNum = randNum; // Store previous quote index
+        displayedQuote = quoteList[randNum]; // Select a random quote
       });
     }
   }
@@ -129,8 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => QuoteScreen(
-              quote:
-                  displayedQuote!), // Pass the displayed quote to the details screen
+              quote: displayedQuote!), // Pass the displayed quote to the screen
         ),
       );
     }
@@ -138,6 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (displayedQuote == null) {
+      generateQuote();
+    }
     return Scaffold(
       appBar: AppBar(title: const Text("Quote Generator")), // AppBar with title
       body: Padding(
@@ -177,12 +187,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 20),
 
-
-            // Display the generated quote
-            if (displayedQuote != null)
-            SizedBox(width: 500,
-            child: 
-              GestureDetector(
+            SizedBox(
+              width: 500,
+              child: GestureDetector(
                 onTap: navigateToQuoteDetails, // Navigate to details on tap
                 child: Container(
                   width: double.infinity,
@@ -214,7 +221,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 textStyle: const TextStyle(fontSize: 18, color: Colors.black),
               ),
-              child: const Text("Generate",style:TextStyle(fontSize: 22, color: Colors.black) ,),
+              child: const Text(
+                "Generate",
+                style: TextStyle(fontSize: 22, color: Colors.black),
+              ),
             ),
           ],
         ),
